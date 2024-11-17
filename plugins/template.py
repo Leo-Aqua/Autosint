@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QPushButton
 from AoPlugin import AoPlugin
 
 
-class Plugin(AoPlugin):  # Class name MUST be Plugin
+class Plugin(AoPlugin):
     plugin_name = "Plugin Template"  # Plugin name
     plugin_icon = "fugue/icons/puzzle.png"  # Plugin icon (optional)
 

@@ -57,7 +57,7 @@ class Autosint(QtWidgets.QMainWindow):
                 ):  # Check if parent class is autosint.Plugin()
                     self.plugins.append(
                         {
-                            "class": obj,
+                            "class": obj(),
                             "active": False,
                             "filename": plugin_file,
                             "module": module,
@@ -76,25 +76,25 @@ class Autosint(QtWidgets.QMainWindow):
         for plugin in self.plugins:
 
             self.ui.plugin_list.addItem(
-                f"{plugin["class"]().name} - v{plugin["class"]().version}"
+                f"{plugin["class"].name} - v{plugin["class"].version}"
             )
             items = [
                 self.ui.plugin_list.item(x) for x in range(self.ui.plugin_list.count())
             ]
             self.ui.plugin_list.item(len(items) - 1).setToolTip(
-                f"Name: {plugin["class"]().name}\nVersion: {plugin["class"]().version}\nDescription: {plugin["class"]().description}\nSource: {plugin["module"].__name__}"
+                f"Name: {plugin["class"].name}\nVersion: {plugin["class"].version}\nDescription: {plugin["class"].description}\nSource: {plugin["module"].__name__}"
             )
 
     def add_plugin(self):
         try:
             selected_row = self.ui.plugin_list.selectedIndexes()[0].row()
             plugin = self.plugins[selected_row]
-            logging.debug(plugin)
+            self.ui.workarea.addTab(plugin["class"], plugin["class"].name)
         except IndexError:
             pass  # Do nothig in case nothing is selected
 
 
-class Plugin(QtWidgets.QWidget):
+class Plugin:
 
     def __init__(
         self,
@@ -115,14 +115,16 @@ class Plugin(QtWidgets.QWidget):
         self.description = description
         self.version = version
 
-    def setupUi(self):
+    class Input(QtWidgets.QWidget):
+        pass
+
+    class Output(QtWidgets.QWidget):
         pass
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication()
     print(QtWidgets.QStyleFactory.keys())
-    app.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
     window = Autosint()
     window.show()
     sys.exit(app.exec())

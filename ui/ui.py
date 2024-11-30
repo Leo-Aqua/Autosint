@@ -153,6 +153,7 @@ class Ui_MainWindow(object):
 
         workarea_layout.addLayout(workarea_title_layout)
         self.workarea = QtWidgets.QTabWidget()
+        self.workarea.setMovable(True)
         workarea_layout.addWidget(self.workarea)
 
         self.splitter_top.addWidget(workarea_container)

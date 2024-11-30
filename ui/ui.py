@@ -46,11 +46,18 @@ from PySide6.QtWidgets import (
 
 
 def icon(name, shadowless=False):
-    return QtGui.QIcon(
-        os.path.dirname(__file__) + "/icons/icons/" + name + ".png"
-        if not shadowless
-        else os.path.dirname(__file__) + "/icons/icons-shadowless/" + name + ".png"
+    ico = QIcon()
+    ico.addFile(
+        (
+            os.path.dirname(__file__)[:-3] + "/icons/icons/" + name + ".png"
+            if not shadowless
+            else os.path.dirname(__file__)[:-3]
+            + "/icons/icons-shadowless/"
+            + name
+            + ".png"
+        ),
     )
+    return ico
 
 
 class Ui_MainWindow(object):
@@ -65,7 +72,11 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle("Autosint")
 
         # Set window icon
-        MainWindow.setWindowIcon(icon("autosint"))
+        icon_ = QIcon()
+        icon_.addFile("icons/icons/autosint.png")
+        icon_ = icon("autosint")
+
+        MainWindow.setWindowIcon(icon_)
 
         # Add menu bar
         menubar = QMenuBar()
@@ -78,9 +89,7 @@ class Ui_MainWindow(object):
         self.statusbar.showMessage("Ready")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.load_plugin_action = file_menu.addAction(
-            "Load plugin"
-        )  # TODO implement self.load_plugin
+        self.load_plugin_action = file_menu.addAction("Load plugin")
         self.load_plugin_action.setIcon(icon("plug--plus"))
         self.load_plugin_action.setShortcut("Ctrl+L")
         self.exit_action = file_menu.addAction("Exit", sys.exit)
@@ -107,11 +116,20 @@ class Ui_MainWindow(object):
         plugin_title_layout.addWidget(plugin_icon)
         plugin_label = QtWidgets.QLabel("Plugins")
         plugin_title_layout.addWidget(plugin_label)
+        self.plugin_remove_button = QtWidgets.QPushButton()
+        self.plugin_remove_button.setIcon(icon("plug--arrow--left"))
+        plugin_title_layout.addWidget(self.plugin_remove_button)
+        self.plugin_add_button = QtWidgets.QPushButton()
+        self.plugin_add_button.setIcon(icon("plug--arrow--right"))
+        plugin_title_layout.addWidget(self.plugin_add_button)
         plugin_title_layout.addStretch()
         plugin_layout.addLayout(plugin_title_layout)
+
         plugin_list_layout = QtWidgets.QVBoxLayout()
+
         self.plugin_list = QtWidgets.QListWidget()
         plugin_list_layout.addWidget(self.plugin_list)
+
         self.load_plugins_button = QtWidgets.QPushButton("(Re)Load plugins")
         self.load_plugins_button.setFixedHeight(40)
         self.load_plugins_button.setIcon(icon("plug--plus"))

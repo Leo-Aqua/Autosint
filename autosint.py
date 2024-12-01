@@ -10,6 +10,7 @@ import autosint
 import logging
 import coloredlogs
 import re
+from plugin_loader import load_plugins
 
 
 class Autosint(QtWidgets.QMainWindow):
@@ -22,51 +23,13 @@ class Autosint(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         logging.info("Initialized ui")
-        self.load_plugins()
+        self.plugins = load_plugins()
         # Events
         self.ui.load_plugin_action.triggered.connect(self.load_plugins)
         self.ui.load_plugins_button.clicked.connect(self.load_plugins)
         self.ui.plugin_add_button.clicked.connect(self.add_plugin)
         # self.ui.plugin_remove_button.clicked.connect(self.remove_plugin) # TODO Implement
         self.show()
-
-    def load_plugins(self):
-
-        self.plugins = []
-        # Get all Python files in the plugins directory
-        plugin_files = [f for f in os.listdir("plugins") if f.endswith(".py")]
-
-        for plugin_file in plugin_files:
-            # Remove the file extension and import the module dynamically
-            plugin_name = plugin_file[:-3]  # Remove '.py'
-            try:
-                # Import the plugin module dynamically using importlib
-                module = importlib.import_module(f"{"plugins"}.{plugin_name}")
-            except ModuleNotFoundError as e:
-                logging.error(f"Error importing {plugin_name}: {e}")
-                continue
-
-            logging.debug(inspect.getmembers(module, inspect.isclass))
-            # Find all classes in the module that inherit from Plugin
-            for name, obj in inspect.getmembers(module, inspect.isclass):
-                if obj is autosint.Plugin:  # Skip if class is autosint.Plugin()
-                    continue
-
-                if (
-                    obj.__base__ is autosint.Plugin
-                ):  # Check if parent class is autosint.Plugin()
-                    self.plugins.append(
-                        {
-                            "class": obj(),
-                            "active": False,
-                            "filename": plugin_file,
-                            "module": module,
-                        }
-                    )
-
-        logging.debug("Loaded plugins: " + str(self.plugins))
-        self.ui.statusbar.showMessage(f"Loaded {str(len(self.plugins))} plugins.", 3000)
-        self.updatePluginList()
 
     def get_plugins(self):
         return self.plugins

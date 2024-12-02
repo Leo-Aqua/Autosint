@@ -1,7 +1,7 @@
 import os
 import importlib
 import inspect
-from plugins.plugin_interface import PluginInterface
+from plugins.utils.plugin_interface import PluginInterface
 
 
 def load_plugins(plugin_folder: str):
@@ -9,7 +9,6 @@ def load_plugins(plugin_folder: str):
     Dynamically load all valid plugins from the specified folder.
     """
     plugin_instances = {}
-    plugin_order = []
 
     for file in os.listdir(plugin_folder):
         if file.endswith(".py") and file != "plugin_interface.py":
@@ -27,6 +26,5 @@ def load_plugins(plugin_folder: str):
                         "instance": instance,
                         "active": True,
                     }
-                    plugin_order.append(key)
 
-    return plugin_instances, plugin_order
+    return plugin_instances

@@ -11,6 +11,7 @@ import logging
 import coloredlogs
 import re
 from plugin_loader import load_plugins
+from pprint import pprint
 
 
 class Autosint(QtWidgets.QMainWindow):
@@ -23,13 +24,21 @@ class Autosint(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         logging.info("Initialized ui")
-        self.plugins = load_plugins()
+        self.plugins = load_plugins("plugins")
+        logging.info(f"Loaded {str(len(self.plugins))} plugins.")
+        self.ui.statusbar.showMessage(f"Loaded {str(len(self.plugins))} plugins.")
+        self.updatePluginList()
         # Events
-        self.ui.load_plugin_action.triggered.connect(self.load_plugins)
-        self.ui.load_plugins_button.clicked.connect(self.load_plugins)
-        self.ui.plugin_add_button.clicked.connect(self.add_plugin)
-        # self.ui.plugin_remove_button.clicked.connect(self.remove_plugin) # TODO Implement
+        self.ui.load_plugin_action.triggered.connect(self.reload_plugins)
+        self.ui.load_plugins_button.clicked.connect(self.reload_plugins)
+        self.ui.plugin_list.itemClicked.connect(self.select_plugin)
+        self.ui.exit_action.triggered.connect(sys.exit)
         self.show()
+
+    def reload_plugins(self):
+        plugins = load_plugins("plugins")
+        self.updatePluginList()
+        self.plugins = plugins
 
     def get_plugins(self):
         return self.plugins
@@ -37,57 +46,36 @@ class Autosint(QtWidgets.QMainWindow):
     def updatePluginList(self):
         self.ui.plugin_list.clear()
         for plugin in self.plugins:
-
-            self.ui.plugin_list.addItem(
-                f"{plugin["class"].name} - v{plugin["class"].version}"
+            logging.debug(f" Current Plugin: {plugin}")
+            item = QtWidgets.QListWidgetItem()
+            item.setText(
+                f"{self.plugins[plugin]["instance"].name} - {self.plugins[plugin]["instance"].version}"
             )
-            items = [
-                self.ui.plugin_list.item(x) for x in range(self.ui.plugin_list.count())
-            ]
-            self.ui.plugin_list.item(len(items) - 1).setToolTip(
-                f"Name: {plugin["class"].name}\nVersion: {plugin["class"].version}\nDescription: {plugin["class"].description}\nSource: {plugin["module"].__name__}"
+            item.setToolTip(
+                f"v{self.plugins[plugin]["instance"].version}\nDescription: {self.plugins[plugin]["instance"].description}\n{plugin}"
             )
+            item.setCheckState(QtCore.Qt.CheckState.Checked)
+            item.setStatusTip(
+                f"{plugin} - {self.plugins[plugin]["instance"].name}\n{plugin}"
+            )
+            if self.plugins[plugin]["instance"].icon != None:
+                item.setIcon(self.plugins[plugin]["instance"].icon)
+            self.ui.plugin_list.addItem(item)
 
-    def add_plugin(self):
-        try:
-            selected_row = self.ui.plugin_list.selectedIndexes()[0].row()
-            plugin = self.plugins[selected_row]
-            self.ui.workarea.addTab(plugin["class"], plugin["class"].name)
-        except IndexError:
-            pass  # Do nothig in case nothing is selected
+    def select_plugin(self):
+        def generate_output_widget(plugin_instance): ...  # TODO implement
 
-
-class Plugin:
-
-    def __init__(
-        self,
-        name: str,
-        input_fields: list,
-        output_fields: list,
-        compatible_plugins: list,
-        version: str,
-        icon: QtGui.QIcon = None,
-        description: str = None,
-    ):
-        super(Plugin, self).__init__()
-        self.name = name
-        self.input_fields = input_fields
-        self.output_fields = output_fields
-        self.compatible_plugins = compatible_plugins
-        self.icon = icon
-        self.description = description
-        self.version = version
-
-    class Input(QtWidgets.QWidget):
-        pass
-
-    class Output(QtWidgets.QWidget):
-        pass
+        self.ui.workarea.clear()
+        current_item = self.ui.plugin_list.currentIndex().row()
+        current_item_instance = list(self.plugins.values())[current_item]["instance"]
+        self.ui.workarea.addTab(current_item_instance.ui(), "Input")
+        logging.debug(current_item_instance.inputs)
+        self.ui.workarea.addTab(generate_output_widget(current_item_instance), "Output")
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication()
-    print(QtWidgets.QStyleFactory.keys())
+    app.setStyle(QtWidgets.QStyleFactory.create("windows11"))
     window = Autosint()
     window.show()
     sys.exit(app.exec())

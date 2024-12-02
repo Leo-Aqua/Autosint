@@ -36,3 +36,16 @@ class ExamplePlugin(PluginInterface):
             layout = QVBoxLayout(self.ui_widget)
             layout.addWidget(self.ip_input)
         return self.ui_widget
+
+    def set_input(self, key, value):
+        if key in self.inputs:
+            self.inputs[key].setText(value)
+
+    def get_output(self, key):
+        return self.outputs.get(key)
+
+    def connect_output(self, key, callback):
+        """
+        Connect a specific output signal to another function or plugin.
+        """
+        self.output_emitted.connect(callback)

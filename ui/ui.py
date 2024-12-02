@@ -81,6 +81,7 @@ class Ui_MainWindow(object):
         # Add menu bar
         menubar = QMenuBar()
         file_menu = menubar.addMenu("File")
+        file_menu.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
         help_menu = menubar.addMenu("Help")
         MainWindow.setMenuBar(menubar)
 
@@ -89,12 +90,21 @@ class Ui_MainWindow(object):
         self.statusbar.showMessage("Ready")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.load_plugin_action = file_menu.addAction("Load plugin")
+        self.load_plugin_action = file_menu.addAction("Re&load plugin")
         self.load_plugin_action.setIcon(icon("plug--plus"))
         self.load_plugin_action.setShortcut("Ctrl+L")
-        self.exit_action = file_menu.addAction("Exit", sys.exit)
+        self.load_plugin_action.setStatusTip("Reload Plugins")
+        self.run_action = file_menu.addAction("&Run")
+        self.run_action.setIcon(icon("wand-magic"))
+        self.run_action.setShortcut("Ctrl+R")
+        self.run_action.setStatusTip("Run all active plugins from top to bottom")
+        file_menu.addSeparator()
+        self.about_action = file_menu.addAction("&About")  # TODO Implement about dialog
+        self.about_action.setIcon(icon("information"))
+        self.exit_action = file_menu.addAction("&Quit")
         self.exit_action.setIcon(icon("door-open-out"))
         self.exit_action.setShortcut("Ctrl+Q")
+        self.exit_action.setStatusTip("Quit the application")
 
         # Setup splitters
         self.splitter_top = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
@@ -116,12 +126,6 @@ class Ui_MainWindow(object):
         plugin_title_layout.addWidget(plugin_icon)
         plugin_label = QtWidgets.QLabel("Plugins")
         plugin_title_layout.addWidget(plugin_label)
-        self.plugin_remove_button = QtWidgets.QPushButton()
-        self.plugin_remove_button.setIcon(icon("plug--arrow--left"))
-        plugin_title_layout.addWidget(self.plugin_remove_button)
-        self.plugin_add_button = QtWidgets.QPushButton()
-        self.plugin_add_button.setIcon(icon("plug--arrow--right"))
-        plugin_title_layout.addWidget(self.plugin_add_button)
         plugin_title_layout.addStretch()
         plugin_layout.addLayout(plugin_title_layout)
 
@@ -130,10 +134,17 @@ class Ui_MainWindow(object):
         self.plugin_list = QtWidgets.QListWidget()
         plugin_list_layout.addWidget(self.plugin_list)
 
-        self.load_plugins_button = QtWidgets.QPushButton("(Re)Load plugins")
-        self.load_plugins_button.setFixedHeight(40)
+        self.load_plugins_button = QtWidgets.QPushButton("Reload plugins")
+        self.load_plugins_button.setFixedHeight(30)
         self.load_plugins_button.setIcon(icon("plug--plus"))
+        self.load_plugins_button.setStatusTip("Reload Plugins")
         plugin_list_layout.addWidget(self.load_plugins_button)
+        self.run_button = QtWidgets.QPushButton("Run")
+        self.run_button.setFixedHeight(40)
+        self.run_button.setIcon(icon("wand-magic"))
+        self.run_button.setDefault(True)
+        self.run_button.setStatusTip("Run all active plugins from top to bottom")
+        plugin_list_layout.addWidget(self.run_button)
         plugin_layout.addLayout(plugin_list_layout)
 
         # Add the container widget to the splitter
@@ -153,7 +164,7 @@ class Ui_MainWindow(object):
 
         workarea_layout.addLayout(workarea_title_layout)
         self.workarea = QtWidgets.QTabWidget()
-        self.workarea.setMovable(True)
+        self.workarea.setGraphicsEffect(QtWidgets.QGraphicsColorizeEffect())
         workarea_layout.addWidget(self.workarea)
 
         self.splitter_top.addWidget(workarea_container)
